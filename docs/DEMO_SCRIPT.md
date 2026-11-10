@@ -10,7 +10,7 @@
 
 **1:55–2:55 Agent run:** Show agents/core.py role definitions, run_agents.py orchestration, and agents/tools.py. Execute `python run_agents.py --live --aws-audit` live. Show generated requirements.json, infrastructure.json, security.json, verification.json, and logs/execution.jsonl. Explain model decisions versus Python-invoked tools; show exact evidence of two executable tools.
 
-**2:55–4:15 Recovery:** On your own dedicated bucket, use `python -m scripts.failure_experiment break --approve`, wait until invalidation finishes, show failed about.html request, run verification/agent diagnosis, restore using `python -m scripts.failure_experiment restore --approve`, then show restored page after invalidation. Capture actual chronological logs. If recovery cannot be demonstrated, say so; do not fake it.
+**2:55–4:15 Recovery:** Show the disposable recovery-probe workflow; it does not touch website pages. Run `python -m scripts.failure_experiment seed --approve` and `verify`, then `python -m scripts.failure_experiment break --approve` and `verify`. Run `python run_agents.py --live --recovery-probe` to show the verification agent's diagnosis from the observed missing probe. Restore with `python -m scripts.failure_experiment restore --approve`, verify it, and rerun the agent. After recording the successful recovery evidence, remove the disposable probe with `python -m scripts.failure_experiment cleanup --approve`. Capture actual chronological logs. If recovery cannot be demonstrated, say so; do not fake it.
 
 **4:15–4:40 Close:** Explain one actual challenge and the value of human approval, structured JSON, and independent verification.
 
