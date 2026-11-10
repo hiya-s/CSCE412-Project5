@@ -1,0 +1,4 @@
+aws_region = "us-east-1"
+domain_name = "csce412.example.com"
+hosted_zone_name = "example.com"
+bucket_name = "globally-unique-csce412-website-bucket"
