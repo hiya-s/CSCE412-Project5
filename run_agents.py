@@ -14,6 +14,7 @@ def main():
     parser.add_argument('--request', default='Build a five-page responsive educational cloud-security website with a contact form demonstration, custom HTTPS domain, private S3, CloudFront, ACM, and Route 53.')
     parser.add_argument('--live', action='store_true', help='Verify deployed website via HTTP')
     parser.add_argument('--aws-audit', action='store_true', help='Read AWS config using configured credentials')
+    parser.add_argument('--recovery-probe', action='store_true', help='Include the disposable S3 recovery probe observation')
     args = parser.parse_args()
     try:
         requirements = run_agent('requirements', {'user_request': args.request})
@@ -25,6 +26,9 @@ def main():
             observations['http_site'] = check_http_site(os.environ['SITE_URL'])
         if args.aws_audit:
             observations['aws_security'] = aws_readonly_audit(os.environ['S3_BUCKET'], os.environ['CLOUDFRONT_DISTRIBUTION_ID'])
+        if args.recovery_probe:
+            from scripts.failure_experiment import check_probe
+            observations['recovery_probe'] = check_probe()
         verification = run_agent('verification', {'requirements': requirements, 'security_review': security, 'observed_tool_results': observations})
         workflow = {'requirements': requirements, 'infrastructure': infrastructure, 'security': security, 'observations': observations, 'verification': verification}
         write_json('agent_communication.json', workflow)
