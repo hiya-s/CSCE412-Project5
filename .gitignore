@@ -8,4 +8,5 @@ __pycache__/
 *.tfvars
 logs/*.jsonl
 outputs/*.json
+outputs/failure_experiment_state.tmp
 .DS_Store
