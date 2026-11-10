@@ -61,20 +61,24 @@ Verify all five pages and HTTPS. Verify that direct anonymous S3 object access i
 
 ## 3. Controlled failure and recovery (real AWS changes)
 
-ONLY perform when website deployment is confirmed and you own the bucket. `break` deliberately deletes the single `about.html` object (recoverable from the local website directory). Running any change requires `--approve`. DO NOT run on production or shared buckets.
+The recovery demo uses a uniquely named disposable text object at `/project5-recovery-probe-<id>.txt`; it never removes or changes a website page. The script refuses to run unless the configured bucket is `csce412hiya-website-2026`, the site URL is `https://csce412hiya.link`, all four S3 public-access-block settings are enabled, and exactly one deployed CloudFront distribution matches the domain and has an OAC-protected origin for that bucket. Every AWS mutation requires `--approve`. Each mutation invalidates only the probe path and waits for that invalidation to complete. Keep the local state file (`outputs/failure_experiment_state.json`) until cleanup finishes.
 
-```bash
+Run the following from the project directory after confirming the `.env` values and AWS identity:
+
+```powershell
+python -m scripts.failure_experiment seed --approve
+python -m scripts.failure_experiment verify
 python -m scripts.failure_experiment break --approve
-# Wait for CloudFront invalidation to complete.
-python -m scripts.failure_experiment verify  # observe about.html failing
-python run_agents.py --live                  # agents analyze observed failure
+python -m scripts.failure_experiment verify
+python run_agents.py --live --recovery-probe
 python -m scripts.failure_experiment restore --approve
-# Wait for CloudFront invalidation to complete.
-python -m scripts.failure_experiment verify  # verify five pages restored
-python run_agents.py --live                  # capture actual diagnosis/verification
+python -m scripts.failure_experiment verify
+python run_agents.py --live --recovery-probe
+python -m scripts.failure_experiment cleanup --approve
+python -m scripts.failure_experiment verify
 ```
 
-**Important:** The HTTP checker currently reports every failing page, but CloudFront may return a `403` or `404` when the object is missing. If about.html is still cached, wait until the invalidation completes. Keep logs and screenshots of actual AWS state, failed requests and recovery. The failure experiment's AWS calls are logged. The security and verification agents suggest changes; they do NOT autonomously deploy.
+`seed` creates the disposable object. `break` deletes only the object whose S3 metadata matches the local probe ID. `restore` re-creates its exact content. `cleanup` removes that test object after the successful recovery evidence is captured. `verify` observes the probe over HTTPS; the agent's `--recovery-probe` option includes that observation in the verification agent's input. A failed HTTP request is reported as an unverified check, not as success. All mutations and observations are recorded in `logs/execution.jsonl`; retain real outputs and screenshots for the report. The agents recommend actions but do NOT autonomously change AWS.
 
 ## 4. Submission mapping
 
